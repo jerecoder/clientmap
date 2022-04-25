@@ -12,6 +12,12 @@ const firebaseConfig = {
     measurementId: "G-F9VFEZ3FYF"
 };
 
+if (location.hostname === "localhost") {
+    config = {
+        databaseURL: "http://localhost:4000/firestore"
+    };
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
