@@ -2,7 +2,7 @@
 import { initializeApp } from 'firebase/app';
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-const firebaseConfig = {
+let firebaseConfig = {
     apiKey: "AIzaSyBRrI-nmNq0V4JooyOsQSlS0CeGCVcJZxQ",
     authDomain: "clientmap-b1f1b.firebaseapp.com",
     projectId: "clientmap-b1f1b",
@@ -14,20 +14,28 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 console.log("hi");
-/*
+
 if (location.hostname === "localhost") {
-    config = {
+    firebaseConfig = {
         databaseURL: "http://localhost:4000/firestore"
     };
 }
 
 
+// Initialize and add the map
 function initMap() {
-    let map = new google.maps.Map(document.getElementById('map'), {
-        center: { lat: 0, lng: 0 },
-        zoom: 3
-    }); <
-    script src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBf8QJr96TN4RwSEsnEghuHlsVUQHpzhic&callback=initMap&v=weekly "
-    defer > < /script>
-        //
-} */
+    // The location of Uluru
+    const uluru = { lat: -25.344, lng: 131.031 };
+    // The map, centered at Uluru
+    const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 4,
+        center: uluru,
+    });
+    // The marker, positioned at Uluru
+    const marker = new google.maps.Marker({
+        position: uluru,
+        map: map,
+    });
+}
+
+window.initMap = initMap;
