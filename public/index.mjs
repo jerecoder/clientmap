@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'firebase/app';
 // https://firebase.google.com/docs/web/setup#available-libraries
-
+/*
 const firebaseConfig = {
     apiKey: "AIzaSyBRrI-nmNq0V4JooyOsQSlS0CeGCVcJZxQ",
     authDomain: "clientmap-b1f1b.firebaseapp.com",
@@ -21,3 +21,12 @@ if (location.hostname === "localhost") {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+
+function initMap() {
+    let map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 0, lng: 0 },
+        zoom: 3
+    });
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBf8QJr96TN4RwSEsnEghuHlsVUQHpzhic&callback=initMap&v=weekly " defer></script>
+//
+}*/
