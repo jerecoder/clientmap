@@ -16,9 +16,10 @@ let firebaseConfig = {
     measurementId: "G-F9VFEZ3FYF"
 };
 
-// Initialize Firebase
+// Initialize 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const key = "AIzaSyBf8QJr96TN4RwSEsnEghuHlsVUQHpzhic";
+let geocoder, map;
 
 if (location.hostname === "localhost") {
     firebaseConfig = {
@@ -26,21 +27,37 @@ if (location.hostname === "localhost") {
     };
 }
 
+function get_lat_lng(address) {
+    return new Promise((resolve, reject) => {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ 'address': address }, (results, status) => {
+            if (status === 'OK') {
+                resolve(results[0].geometry.location);
+            } else {
+                reject(status);
+            }
+        });
+    });
+}
 
 // Initialize and add the map
-function initMap() {
+async function initMap() {
+    geocoder = new google.maps.Geocoder();
     // The location of Uluru
-    const uluru = { lat: -25.344, lng: 131.031 };
-    // The map, centered at Uluru
-    const map = new google.maps.Map(document.getElementById("map"), {
+    const pos = await get_lat_lng("Plaza 2730 CABA Argentina");
+    console.log(pos);
+    map = new google.maps.Map(document.getElementById('map'), {
         zoom: 4,
-        center: uluru,
+        center: pos
     });
-    // The marker, positioned at Uluru
+    //console.log(uluru);
+    // The map, centered at Uluru
+    /*// The marker, positioned at Uluru
     const marker = new google.maps.Marker({
         position: uluru,
         map: map,
-    });
+    });*/
 }
+
 
 window.initMap = initMap;
