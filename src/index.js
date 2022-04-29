@@ -47,17 +47,20 @@ async function initMap() {
     geocoder = new google.maps.Geocoder();
     // The location of Uluru
     const pos = await get_lat_lng("Plaza 2730 CABA Argentina");
-    console.log(pos);
     map = new google.maps.Map(document.getElementById('map'), {
         zoom: 4,
         center: pos
     });
 }
 
-/*function onApiLoad() {
-    /*gapi.load('auth2', onAuthApiLoad);
+function onApiLoad() {
+    gapi.load('auth2', onAuthApiLoad);
     gapi.load('picker', onPickerApiLoad);
-console.log("hi");
-} */
+}
 
-window.initMap = initMap;
+function init() {
+    initMap();
+    onApiLoad();
+}
+
+window.addEventListener("load", init);
