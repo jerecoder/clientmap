@@ -19,6 +19,8 @@ let firebaseConfig = {
 // Initialize 
 const app = initializeApp(firebaseConfig);
 const key = "AIzaSyBf8QJr96TN4RwSEsnEghuHlsVUQHpzhic";
+const clientID = "755477234112-o6g6u940a6sok5dsvkd8idpp48h91h8u.apps.googleusercontent.com";
+const clientSecret = "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";
 let geocoder, map;
 
 if (location.hostname === "localhost") {
@@ -50,14 +52,12 @@ async function initMap() {
         zoom: 4,
         center: pos
     });
-    //console.log(uluru);
-    // The map, centered at Uluru
-    /*// The marker, positioned at Uluru
-    const marker = new google.maps.Marker({
-        position: uluru,
-        map: map,
-    });*/
 }
 
+/*function onApiLoad() {
+    /*gapi.load('auth2', onAuthApiLoad);
+    gapi.load('picker', onPickerApiLoad);
+console.log("hi");
+} */
 
 window.initMap = initMap;

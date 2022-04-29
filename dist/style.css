@@ -1,8 +1,37 @@
 /* Set the size of the div element that contains the map */
 
+body {
+    display: flex;
+    justify-content: center;
+}
+
 #map {
-    height: 400px;
+    height: 98vh;
     /* The height is 400 pixels */
-    width: 100%;
+    width: 98vw;
     /* The width is the width of the web page */
+    vertical-align: middle;
+    position: relative;
+}
+
+#interact {
+    width: max(18rem, 20vw);
+}
+
+#cbody {
+    text-align: center;
+}
+
+a {
+    display: inline-block;
+    margin: 0.5rem;
+    width: 80%;
+}
+
+#ubicaciones {
+    margin-top: 1em;
+}
+
+p {
+    text-align: left;
 }
