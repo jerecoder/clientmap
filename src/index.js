@@ -101,7 +101,7 @@ function onApiLoad() {
 
 function init() {
     initMap();
-    onApiLoad();
 }
 
 window.addEventListener("load", init);
+document.getElementById("crear").addEventListener("click", onApiLoad);
