@@ -29,6 +29,8 @@ if (location.hostname === "localhost") {
     };
 }
 
+
+// MAP
 function get_lat_lng(address) {
     return new Promise((resolve, reject) => {
         const geocoder = new google.maps.Geocoder();
@@ -42,7 +44,6 @@ function get_lat_lng(address) {
     });
 }
 
-// Initialize and add the map
 async function initMap() {
     geocoder = new google.maps.Geocoder();
     // The location of Uluru
@@ -52,10 +53,50 @@ async function initMap() {
         center: pos
     });
 }
+//PICKER
+let pickerApiLoaded = false;
+let oauthToken;
+let scope = "https://www.googleapis.com/auth/drive";
+
+function onAuthApiLoad() {
+    window.gapi.auth.authorize({
+        'client_id': clientID,
+        'scope': scope
+    }, handleAuthResult);
+}
+
+function handleAuthResult(authResult) {
+    if (authResult && !authResult.error) {
+        oauthToken = authResult.access_token;
+        createPicker();
+    }
+}
+
+function createPicker() {
+    var picker = new google.picker.PickerBuilder()
+        .addView(new google.picker.DocsUploadView())
+        .addView(new google.picker.DocsView())
+        .setOAuthToken(oauthToken)
+        .setDeveloperKey(key)
+        .setCallback(pickerCallback)
+        .build();
+    picker.setVisible(true);
+}
+
+function pickerCallback(data) {
+    var url = 'nothing';
+    if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
+        var doc = data[google.picker.Response.DOCUMENTS][0];
+        url = doc[google.picker.Document.URL];
+    }
+    var message = 'You picked: ' + url;
+    document.getElementById('result').innerHTML = message;
+}
+
 
 function onApiLoad() {
-    gapi.load('auth2', onAuthApiLoad);
-    gapi.load('picker', onPickerApiLoad);
+    gapi.load('auth', { 'callback': onAuthApiLoad });
+    gapi.load('picker');
 }
 
 function init() {
