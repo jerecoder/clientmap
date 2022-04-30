@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { async } from "@firebase/util";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -34,7 +35,11 @@ function get_lat_lng(address) {
     return new Promise((resolve, reject) => {
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ 'address': address }, (results, status) => {
-            if (status === 'OK') {
+            if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
+                resolve("timeout");
+            } else if (status == google.maps.GeocoderStatus.ZERO_RESULTS) {
+                resolve("null");
+            } else if (status === 'OK') {
                 resolve(results[0].geometry.location);
             } else {
                 reject(status);
@@ -53,38 +58,47 @@ async function initMap() {
     });
 }
 
-///SHEETS API
-/*async function intializeGapiClient() {
-    await gapi.client.init({
-        apiKey: key,
-        discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4']
+async function newMarker(pos) {
+    new google.maps.Marker({
+        position: pos,
+        map,
+        title: "point",
     });
-    gapiInited = true;
 }
 
-
-function gisLoaded() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: clientID,
-        scope: scope,
+async function delay(time) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, time);
     });
-    gisInited = true;
 }
-*/
+
+//SHEETS API
 async function graph(file) {
     let accessToken = gapi.auth.getToken().access_token;
     let range = "A:C";
     gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: file,
         range: range
-    }).then((response) => {
+    }).then(async(response) => {
         console.log(response);
         var result = response.result;
         var numRows = result.values ? result.values.length : 0;
         var values = response.result.values;
-        //places = values;
+        for (let i = 0; i < values.length; i++) {
+            let q = "";
+            for (let j = 0; j < values[i].length; j++) {
+                q += values[i][j];
+                q += " ";
+            }
+            // TODO: save(point)
+            let pos = await get_lat_lng(q);
+            if (pos == "timeout") {
+                console.log("timeout");
+                await delay(10000);
+            }
+            if (pos != "null" && pos != "timeout") newMarker();
+        }
         let previous = null;
-        console.log(values.message);
     });
 }
 //PICKER
@@ -138,8 +152,6 @@ function onApiLoad() {
 
 function init() {
     initMap();
-    //gapi.load('client', intializeGapiClient);
-    //gisLoaded();
 }
 
 window.addEventListener("load", init);
