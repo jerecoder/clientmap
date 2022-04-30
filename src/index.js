@@ -21,14 +21,13 @@ const app = initializeApp(firebaseConfig);
 const key = "AIzaSyBf8QJr96TN4RwSEsnEghuHlsVUQHpzhic";
 const clientID = "755477234112-o6g6u940a6sok5dsvkd8idpp48h91h8u.apps.googleusercontent.com";
 const clientSecret = "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";
-let geocoder, map;
+let geocoder, map, tokenClient, gisInited, gapiInited;
 
 if (location.hostname === "localhost") {
     firebaseConfig = {
         databaseURL: "http://localhost:4000/firestore"
     };
 }
-
 
 // MAP
 function get_lat_lng(address) {
@@ -51,6 +50,41 @@ async function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
         zoom: 4,
         center: pos
+    });
+}
+
+///SHEETS API
+/*async function intializeGapiClient() {
+    await gapi.client.init({
+        apiKey: key,
+        discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4']
+    });
+    gapiInited = true;
+}
+
+
+function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: clientID,
+        scope: scope,
+    });
+    gisInited = true;
+}
+*/
+async function graph(file) {
+    let accessToken = gapi.auth.getToken().access_token;
+    let range = "A:C";
+    gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: file,
+        range: range
+    }).then((response) => {
+        console.log(response);
+        var result = response.result;
+        var numRows = result.values ? result.values.length : 0;
+        var values = response.result.values;
+        //places = values;
+        let previous = null;
+        console.log(values.message);
     });
 }
 //PICKER
@@ -87,20 +121,25 @@ function pickerCallback(data) {
     var url = 'nothing';
     if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
         var doc = data[google.picker.Response.DOCUMENTS][0];
-        url = doc[google.picker.Document.URL];
+        url = doc.id;
     }
-    var message = 'You picked: ' + url;
-    document.getElementById('result').innerHTML = message;
+    console.log(url);
+    graph(url);
 }
 
-
+//init
 function onApiLoad() {
     gapi.load('auth', { 'callback': onAuthApiLoad });
     gapi.load('picker');
+    gapi.load("client", () => {
+        gapi.client.load("sheets", "v4", () => {});
+    });
 }
 
 function init() {
     initMap();
+    //gapi.load('client', intializeGapiClient);
+    //gisLoaded();
 }
 
 window.addEventListener("load", init);
