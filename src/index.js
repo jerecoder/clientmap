@@ -31,7 +31,10 @@ if (location.hostname === "localhost") {
 }
 
 // MAP
-function get_lat_lng(address) {
+let markers = [];
+let exists = {};
+
+async function get_lat_lng(address) {
     return new Promise((resolve, reject) => {
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ 'address': address }, (results, status) => {
@@ -64,6 +67,7 @@ async function newMarker(pos) {
         map,
         title: "point",
     });
+    markers.push(pos);
 }
 
 async function delay(time) {
@@ -80,26 +84,28 @@ async function graph(file) {
         spreadsheetId: file,
         range: range
     }).then(async(response) => {
-        console.log(response);
         var result = response.result;
         var numRows = result.values ? result.values.length : 0;
         var values = response.result.values;
-        for (let i = 0; i < values.length; i++) {
+        let points = [];
+        for (let i = 1; i < values.length; i++) {
+            if (values[i].length != 3) continue;
             let q = "";
             for (let j = 0; j < values[i].length; j++) {
                 q += values[i][j];
                 q += " ";
             }
-            // TODO: save(point)
-            let pos = await get_lat_lng(q);
-            if (pos == "timeout") {
-                console.log("timeout");
-                await delay(10000);
-            }
-            if (pos != "null" && pos != "timeout") newMarker();
+            if (exists[q] == undefined) points.push(q);
         }
-        let previous = null;
+        let uniq = [...new Set(points)];
+        console.log(uniq.length);
+        for (let index = 0; index < uniq.length; index++) {
+            let pos = await get_lat_lng(uniq[index]);
+            if (pos != "null" && pos != "timeout") newMarker(pos);
+            await delay(300);
+        }
     });
+    console.log(markers.length);
 }
 //PICKER
 let pickerApiLoaded = false;
