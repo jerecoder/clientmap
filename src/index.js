@@ -88,6 +88,7 @@ async function graph(file) {
         var numRows = result.values ? result.values.length : 0;
         var values = response.result.values;
         let points = [];
+        if (values.length >= 1) document.getElementById("alertas").style.visibility = "visible";
         for (let i = 1; i < values.length; i++) {
             let q = "";
             for (let j = 0; j < values[i].length; j++) {
@@ -97,13 +98,26 @@ async function graph(file) {
             if (exists[q] == undefined) points.push(q);
         }
         console.log(points);
+        let count = 0;
         let uniq = [...new Set(points)];
+        let errors = [];
         console.log(uniq.length);
         for (let index = 0; index < uniq.length; index++) {
             let pos = await get_lat_lng(uniq[index]);
-            if (pos != "null" && pos != "timeout") newMarker(pos);
-            await delay(300);
+            if (pos != "null" && pos != "timeout") {
+                newMarker(pos);
+                let p = count / uniq.length;
+                document.getElementById("numero").style.width = (p * 100).toString() + "%";
+            } else {
+                errors.push(uniq[index]);
+            }
+            count++;
+            await delay(500);
         }
+        console.log(errors.length);
+        errors.forEach(element => {
+            console.log(element);
+        });
     });
     console.log(markers.length);
 }
