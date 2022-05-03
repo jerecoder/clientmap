@@ -89,7 +89,6 @@ async function graph(file) {
         var values = response.result.values;
         let points = [];
         for (let i = 1; i < values.length; i++) {
-            if (values[i].length != 3) continue;
             let q = "";
             for (let j = 0; j < values[i].length; j++) {
                 q += values[i][j];
@@ -97,6 +96,7 @@ async function graph(file) {
             }
             if (exists[q] == undefined) points.push(q);
         }
+        console.log(points);
         let uniq = [...new Set(points)];
         console.log(uniq.length);
         for (let index = 0; index < uniq.length; index++) {

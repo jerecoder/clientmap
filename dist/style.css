@@ -35,3 +35,15 @@ a {
 p {
     text-align: left;
 }
+
+#alertas {
+    position: absolute;
+    top: 0.5vw;
+    right: 0.5vw;
+    z-index: 1;
+}
+
+.alert {
+    margin: 0.2em;
+    width: 30vw;
+}
