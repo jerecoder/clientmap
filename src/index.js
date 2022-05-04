@@ -115,7 +115,7 @@ async function graph(file) {
                 if (pos != "null") {
                     newMarker(pos);
                     console.log(cm);
-                    m = m * 1.1;
+                    m = cm / 2;
                 }
                 errors.push(uniq[index]);
             }
