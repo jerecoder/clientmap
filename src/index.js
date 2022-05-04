@@ -97,29 +97,40 @@ async function graph(file) {
             }
             if (exists[q] == undefined) points.push(q);
         }
-        console.log(points);
-        let count = 0;
         let uniq = [...new Set(points)];
         let errors = [];
-        console.log(uniq.length);
+        let m = 500;
+        let begin = performance.now();
         for (let index = 0; index < uniq.length; index++) {
             let pos = await get_lat_lng(uniq[index]);
             if (pos != "null" && pos != "timeout") {
                 newMarker(pos);
-                let p = count / uniq.length;
-                document.getElementById("numero").style.width = (p * 100).toString() + "%";
             } else {
+                let cm = m;
+                while (pos == "timeout") {
+                    cm = cm * 2;
+                    await delay(cm);
+                    pos = await get_lat_lng(uniq[index]);
+                }
+                if (pos != "null") {
+                    newMarker(pos);
+                    console.log(cm);
+                    m = m * 1.1;
+                }
                 errors.push(uniq[index]);
             }
-            count++;
-            await delay(500);
+            let p = index / uniq.length;
+            document.getElementById("numero").style.width = (p * 100).toString() + "%";
+            let speed = (index + 1) / ((performance.now() - begin) / 1000);
+            await delay(m);
+            console.log(m);
         }
-        console.log(errors.length);
+        console.log((begin - performance.now()) / 60000);
         errors.forEach(element => {
             console.log(element);
         });
+        if (values.length >= 1) document.getElementById("alertas").style.visibility = "hidden";
     });
-    console.log(markers.length);
 }
 //PICKER
 let pickerApiLoaded = false;
@@ -157,7 +168,6 @@ function pickerCallback(data) {
         var doc = data[google.picker.Response.DOCUMENTS][0];
         url = doc.id;
     }
-    console.log(url);
     graph(url);
 }
 
