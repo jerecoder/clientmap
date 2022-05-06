@@ -2,11 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 require('dotenv').config();
-const PORT = 5000;
+const port = process.env.PORT || 3000;
 
-const exp = express();
-exp.use(cors());
-exp.listen(PORT, () => console.log("Server is running..."));
-exp.get('/', (req, res) => {
+const app = express()
+app.use(cors());
+app.use(express.json());
+
+app.get("/api/geocode/:adress", (req, res) => {
+    res.send(req.params.adress);
+});
+
+app.listen(port, () => console.log('Server is running on port ' + port + '...'));
+app.get('/', (req, res) => {
     res.json('hi');
 })

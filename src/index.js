@@ -23,49 +23,28 @@ const key = "AIzaSyBf8QJr96TN4RwSEsnEghuHlsVUQHpzhic";
 const clientID = "755477234112-o6g6u940a6sok5dsvkd8idpp48h91h8u.apps.googleusercontent.com";
 const clientSecret = "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";
 let geocoder, map, tokenClient, gisInited, gapiInited;
-
-if (location.hostname === "localhost") {
-    firebaseConfig = {
-        databaseURL: "http://localhost:4000/firestore"
-    };
-}
-
 // MAP
 let markers = [];
 let exists = {};
 
-async function get_lat_lng(address) {
-    return new Promise((resolve, reject) => {
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ 'address': address }, (results, status) => {
-            if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-                resolve("timeout");
-            } else if (status == google.maps.GeocoderStatus.ZERO_RESULTS) {
-                resolve("null");
-            } else if (status === 'OK') {
-                resolve(results[0].geometry.location);
-            } else {
-                reject(status);
-            }
-        });
-    });
-}
-
 async function initMap() {
     geocoder = new google.maps.Geocoder();
     // The location of Uluru
-    const pos = await get_lat_lng("Plaza 2730 CABA Argentina");
+    const pos = {
+        lat: 25,
+        lng: 135
+    };
     map = new google.maps.Map(document.getElementById('map'), {
         zoom: 4,
         center: pos
     });
 }
 
-async function newMarker(pos) {
+async function newMarker(pos, q) {
     new google.maps.Marker({
         position: pos,
         map,
-        title: "point",
+        title: q,
     });
     markers.push(pos);
 }
@@ -77,15 +56,12 @@ async function delay(time) {
 }
 
 //SHEETS API
-async function graph(file) {
-    let accessToken = gapi.auth.getToken().access_token;
-    let range = "A:C";
+async function make(file) {
+    let range = "A:Z";
     gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: file,
         range: range
     }).then(async(response) => {
-        var result = response.result;
-        var numRows = result.values ? result.values.length : 0;
         var values = response.result.values;
         let points = [];
         if (values.length >= 1) document.getElementById("alertas").style.visibility = "visible";
@@ -98,38 +74,41 @@ async function graph(file) {
             if (exists[q] == undefined) points.push(q);
         }
         let uniq = [...new Set(points)];
-        let errors = [];
-        let m = 500;
-        let begin = performance.now();
-        for (let index = 0; index < uniq.length; index++) {
-            let pos = await get_lat_lng(uniq[index]);
-            if (pos != "null" && pos != "timeout") {
-                newMarker(pos);
-            } else {
-                let cm = m;
-                while (pos == "timeout") {
-                    cm = cm * 2;
-                    await delay(cm);
-                    pos = await get_lat_lng(uniq[index]);
-                }
-                if (pos != "null") {
-                    newMarker(pos);
-                    console.log(cm);
-                    m = cm / 2;
-                }
-                errors.push(uniq[index]);
+        //make map, then add
+        let mapID = null;
+        $.ajax({
+            method: "POST",
+            url: "http://localhost:5001/clientmap-b1f1b/us-central1/makeMap",
+            crossDomain: true,
+            dataType: "json",
+            data: {
+                name: "pepe"
+            },
+            success: function(res) {
+                mapID = res;
+                console.log(res, mapID);
+            },
+            error: function(res) {
+                console.log(res, mapID, "hi");
             }
-            let p = index / uniq.length;
-            document.getElementById("numero").style.width = (p * 100).toString() + "%";
-            let speed = (index + 1) / ((performance.now() - begin) / 1000);
-            await delay(m);
-            console.log(m);
-        }
-        console.log((begin - performance.now()) / 60000);
-        errors.forEach(element => {
-            console.log(element);
         });
-        if (values.length >= 1) document.getElementById("alertas").style.visibility = "hidden";
+        uniq.forEach((ad) => {
+            /* $.ajax({
+                 type: "GET",
+                 url: "http://localhost:5001/clientmap-b1f1b/us-central1/addPoint/?adress=" + ad + "&map=" + mapID,
+                 async: !1,
+                 error: function() {
+                     //alert there was an error adding the adress to the database
+                     console.log("error");
+                 }
+             });*/
+        });
+        if (mapID) {
+            console.log(mapID);
+            //once all the points are loaded move to individual map website
+            //window.location.replace(window.location.search + "?id=" + mapID);
+            //Document.getElementById("alertas").style.visibility = "hidden";
+        }
     });
 }
 //PICKER
@@ -168,7 +147,7 @@ function pickerCallback(data) {
         var doc = data[google.picker.Response.DOCUMENTS][0];
         url = doc.id;
     }
-    graph(url);
+    make(url);
 }
 
 //init
@@ -182,6 +161,19 @@ function onApiLoad() {
 
 function init() {
     initMap();
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    if (urlParams.get('id')) {
+        console.log("defined id");
+        //id exists, load database
+        //get the loaded points
+        //keep loading
+    }
+}
+
+function crear() {
+    //ir a pagina nueva
+
 }
 
 window.addEventListener("load", init);

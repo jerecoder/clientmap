@@ -16,7 +16,7 @@
         <div class="card-body" id="cbody">
             <h4 class="card-title" style="text-align: left;">Client Map</h4>
             <p class="card-text">Entendé la distribución geografica de tus clientes.</p>
-            <a href="#" id="crear" class="btn btn-primary">Crear Mapa</a>
+            <a href="#" id="crear" class="btn btn-primary">Cargar Mapa</a>
             <a href="#" class="btn btn-primary">Guardar Mapa</a>
             <ul class="list-group" id="ubicaciones">
                 <li class="list-group-item active" aria-current="true">Ubicaciones recurrentes</li>
@@ -39,7 +39,7 @@
         </div>
         <div class="alert alert-success" role="alert">
             <div id="cafe">
-                <p>Creando puntos...</p>
+                <p>Cargando puntos...</p>
                 <img src="https://i.pinimg.com/originals/1a/56/ea/1a56eaaaf78869d7c6e0e620b2b98394.gif" style="width: 1.4em; height: 1.4em;">
                 <img src="https://i.pinimg.com/originals/1a/56/ea/1a56eaaaf78869d7c6e0e620b2b98394.gif" style="width: 1.4em; height: 1.4em;">
                 <img src="https://i.pinimg.com/originals/1a/56/ea/1a56eaaaf78869d7c6e0e620b2b98394.gif" style="width: 1.4em; height: 1.4em;">
@@ -47,6 +47,7 @@
             <div class="progress">
                 <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 50%" id="numero"></div>
             </div>
+            <div id="tiempo"></div>
         </div>
     </div>
     <div id="map"></div>
