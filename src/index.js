@@ -56,7 +56,7 @@ async function delay(time) {
 }
 
 //SHEETS API
-async function make(file) {
+async function make(file, filename) {
     let range = "A:Z";
     gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: file,
@@ -80,33 +80,41 @@ async function make(file) {
             method: "POST",
             url: "http://localhost:5001/clientmap-b1f1b/us-central1/makeMap",
             crossDomain: true,
+            async: false,
             dataType: "json",
             data: {
-                name: "pepe"
+                name: filename
             },
             success: function(res) {
-                mapID = res;
-                console.log(res, mapID);
+                mapID = res.result;
             },
             error: function(res) {
-                console.log(res, mapID, "hi");
+                console.log(res);
             }
         });
         uniq.forEach((ad) => {
-            /* $.ajax({
-                 type: "GET",
-                 url: "http://localhost:5001/clientmap-b1f1b/us-central1/addPoint/?adress=" + ad + "&map=" + mapID,
-                 async: !1,
-                 error: function() {
-                     //alert there was an error adding the adress to the database
-                     console.log("error");
-                 }
-             });*/
+            $.ajax({
+                method: "POST",
+                url: "http://localhost:5001/clientmap-b1f1b/us-central1/addPoint",
+                crossDomain: true,
+                dataType: "json",
+                async: false,
+                data: {
+                    adress: ad,
+                    map: mapID
+                },
+                success: function(res) {
+                    console.log(res);
+                },
+                error: function(res) {
+                    console.log(res, "error");
+                }
+            });
         });
         if (mapID) {
             console.log(mapID);
             //once all the points are loaded move to individual map website
-            //window.location.replace(window.location.search + "?id=" + mapID);
+            window.location.replace(window.location.search + "?id=" + mapID);
             //Document.getElementById("alertas").style.visibility = "hidden";
         }
     });
@@ -143,11 +151,13 @@ function createPicker() {
 
 function pickerCallback(data) {
     var url = 'nothing';
+    var name = '';
     if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
         var doc = data[google.picker.Response.DOCUMENTS][0];
+        name = doc.name;
         url = doc.id;
     }
-    make(url);
+    make(url, name);
 }
 
 //init

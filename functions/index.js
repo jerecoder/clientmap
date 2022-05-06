@@ -8,15 +8,18 @@ admin.initializeApp();
 const cors = require('cors')({ origin: true });
 
 exports.addPoint = functions.https.onRequest(async(req, res) => {
-    //add the point to the database
-    const adress = req.query.adress;
-    const map = req.query.map;
-    admin.firestore().collection('maps').doc(map).update({
-        data: admin.firestore.FieldValue.arrayUnion(adress)
-    }).then((docRef) => {
-        res.send("Sucess");
-    }).catch((error) => {
-        console.log("Error adding document: " + error);
+    cors(req, res, () => {
+        //add the point to the database
+        const adress = req.body.adress;
+        const map = req.body.map;
+        console.log("nigga" + map);
+        admin.firestore().collection('maps').doc(map).update({
+            data: admin.firestore.FieldValue.arrayUnion(adress)
+        }).then(() => {
+            res.json({ response: "good job!" });
+        }).catch((error) => {
+            console.log("Error adding document: " + error);
+        })
     })
 });
 
@@ -29,7 +32,7 @@ exports.makeMap = functions.https.onRequest(async(req, res) => {
             data: []
         }).then((docRef) => {
             console.log("sucess " + docRef.id);
-            res.json({ result: `Message with ID: ${docRef.id} added.` });
+            res.json({ result: docRef.id });
         }).catch((error) => {
             console.log("Error adding document: " + error + " " + name);
             res.json({ result: `error feo: ${error}` });
