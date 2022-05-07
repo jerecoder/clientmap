@@ -5,6 +5,8 @@ import { async } from "@firebase/util";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
+//local functions: http://localhost:5001/clientmap-b1f1b/us-central1/
+
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 let firebaseConfig = {
@@ -55,6 +57,8 @@ async function delay(time) {
     });
 }
 
+//TODO: change the sheets api to server side processing
+
 //SHEETS API
 async function make(file, filename) {
     let range = "A:Z";
@@ -78,7 +82,7 @@ async function make(file, filename) {
         let mapID = null;
         $.ajax({
             method: "POST",
-            url: "http://localhost:5001/clientmap-b1f1b/us-central1/makeMap",
+            url: "https://us-central1-clientmap-b1f1b.cloudfunctions.net/makeMap",
             crossDomain: true,
             async: false,
             dataType: "json",
@@ -95,7 +99,7 @@ async function make(file, filename) {
         uniq.forEach((ad) => {
             $.ajax({
                 method: "POST",
-                url: "http://localhost:5001/clientmap-b1f1b/us-central1/addPoint",
+                url: "https://us-central1-clientmap-b1f1b.cloudfunctions.net/addPoint",
                 crossDomain: true,
                 dataType: "json",
                 async: false,
@@ -175,15 +179,26 @@ function init() {
     const urlParams = new URLSearchParams(queryString);
     if (urlParams.get('id')) {
         console.log("defined id");
-        //id exists, load database
-        //get the loaded points
-        //keep loading
+        //convert queries
+        $.ajax({
+            method: "GET",
+            url: "https://us-central1-clientmap-b1f1b.cloudfunctions.net/convert",
+            crossDomain: true,
+            dataType: "json",
+            async: false,
+            data: {
+                map: "urlParams.id"
+            },
+            success: function(res) {
+                console.log(res);
+            },
+            error: function(res) {
+                console.log(res, "error");
+            }
+        });
+        //load already converted database
+
     }
-}
-
-function crear() {
-    //ir a pagina nueva
-
 }
 
 window.addEventListener("load", init);

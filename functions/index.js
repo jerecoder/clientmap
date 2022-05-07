@@ -1,27 +1,15 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
+const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 admin.initializeApp();
+
+const secretManagerServiceClient = new SecretManagerServiceClient();
+const name = 'projects/608817167872/secrets/workflow/versions/latest';
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 
 //only for testing
 const cors = require('cors')({ origin: true });
-
-exports.addPoint = functions.https.onRequest(async(req, res) => {
-    cors(req, res, () => {
-        //add the point to the database
-        const adress = req.body.adress;
-        const map = req.body.map;
-        console.log("nigga" + map);
-        admin.firestore().collection('maps').doc(map).update({
-            data: admin.firestore.FieldValue.arrayUnion(adress)
-        }).then(() => {
-            res.json({ response: "good job!" });
-        }).catch((error) => {
-            console.log("Error adding document: " + error);
-        })
-    })
-});
 
 exports.makeMap = functions.https.onRequest(async(req, res) => {
     cors(req, res, () => {
@@ -29,35 +17,62 @@ exports.makeMap = functions.https.onRequest(async(req, res) => {
         const name = req.body.name;
         admin.firestore().collection('maps').add({
             name: name,
-            data: []
+            queries: [],
+            latlng: []
         }).then((docRef) => {
             console.log("sucess " + docRef.id);
             res.json({ result: docRef.id });
         }).catch((error) => {
             console.log("Error adding document: " + error + " " + name);
             res.json({ result: `error feo: ${error}` });
-        })
-    })
+        });
+    });
 });
 
-exports.getLatLng = functions.https.onRequest(async(req, res) => {
-    // Grab the text parameter.
-    const original = req.query.adress;
-    //TODO: implement id based map
-    //const db = req.query.id;
-    // Push the new message into Firestore using the Firebase Admin SDK.
-    $.ajax({
-        type: "GET",
-        url: "https://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(address) + "&key=" + key,
-        async: !1,
-        success: function(data) {
-            console.log(data);
-            response = data.results[0].geometry.location;
-        },
-        error: function() {
-
-        }
+exports.addPoint = functions.https.onRequest(async(req, res) => {
+    cors(req, res, () => {
+        //add the point to the database
+        const adress = req.body.adress;
+        const map = req.body.map;
+        admin.firestore().collection('maps').doc(map).update({
+            queries: admin.firestore.FieldValue.arrayUnion(adress)
+        }).then(() => {
+            res.json({ response: "good job!" });
+        }).catch((error) => {
+            console.log("Error adding document: " + error);
+        });
     });
-    // Send back a message that we've successfully written the message
-    res.json({ result: `Message with ID: ${writeResult.id} added.` });
+});
+
+
+exports.convert = functions.https.onRequest(async(req, res) => {
+    cors(req, res, async() => {
+        const [apikey] = await secretManagerServiceClient.accessSecretVersion({ API_KEY });
+        res.json({ response: apikey });
+        /*//add the point to the database
+        const map = req.body.map;
+        const queries = admin.firestore().collection('maps').doc(map).queries;
+        //make geocoding queries
+        queries.forEach((q) => {
+            $.ajax({
+                type: "GET",
+                url: "https://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(q) + "&key=AIzaSyDLSEV6LDZulCRY-9jdP760cq80PcXQOuw",
+                async: false,
+                success: function(data) {
+                    response = data.results[0].geometry.location;
+                },
+                error: function() {
+                    res.json({ response: "couldn't fetch geocoding" })
+                    alert('Error occured');
+                }
+            });
+        });
+        admin.firestore().collection('maps').doc(map).update({
+            queries: admin.firestore.FieldValue.arrayUnion(adress)
+        }).then(() => {
+            res.json({ response: "good job!" });
+        }).catch((error) => {
+            console.log("Error adding document: " + error);
+        });*/
+    });
 });
