@@ -1,6 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const axios = require('axios');
+const { json } = require("express/lib/response");
 
 admin.initializeApp();
 // // Create and Deploy Your First Cloud Functions
@@ -16,7 +17,7 @@ exports.makeMap = functions.https.onRequest(async(req, res) => {
         admin.firestore().collection('maps').add({
             name: name,
             queries: [],
-            coords: []
+            latlng: []
         }).then((docRef) => {
             console.log("sucess " + docRef.id);
             res.json({ result: docRef.id });
@@ -43,11 +44,8 @@ exports.addPoint = functions.https.onRequest(async(req, res) => {
 });
 
 
-exports.convert = functions.https.onRequest(async(req, res) => {
-    cors(req, res, () => {
-        const key = process.env.API_KEY;
-        console.log(process.env.nombre);
-        /*
+exports.getQ = functions.https.onRequest(async(req, res) => {
+    cors(req, res, async() => {
         //fetch adresses
         const map = req.body.map;
         const mapdoc = admin.firestore().collection('maps').doc(map);
@@ -59,29 +57,35 @@ exports.convert = functions.https.onRequest(async(req, res) => {
                 queries = doc.data().queries;
                 console.log(queries);
             } else {
-                // doc.data() will be undefined in this case
                 res.json({ response: "NO.DOCUMENT" });
             }
         }).then(() => {
-            queries.forEach((q) => {
-                axios.get("https://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(q) + "&key=" + key).then(res => {
-                    console.log(res.data);
-                    //console.log(data.results[0].geometry.location);
-                    //coords.push(data.results[0].geometry.location);
-                }).catch(error => {
-                    console.log(error);
-                })
-            });
-            admin.firestore().collection('maps').doc(map).update({
-                coords: coords
-            }).then(() => {
-                res.json({ response: coords });
-            }).catch((error) => {
-                res.json({ response: "couldn't add coords" });
-            });
+            res.json({ response: queries })
         }).catch((error) => {
             console.log(error);
             res.json({ response: "NO.GET.DOCUMENT" });
-        });*/
+        });
+    });
+});
+
+exports.convert = functions.https.onRequest(async(req, res) => {
+    cors(req, res, async() => {
+        //fetch adresses
+        let key = process.env.key;
+        const map = req.body.map;
+        const q = req.body.query;
+        const mapdoc = admin.firestore().collection('maps').doc(map);
+        let coords = [];
+        let ret = {}
+        axios.get("https://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(q) + "&key=" + key).then(res => {
+            console.log(res.data.results[0].geometry.location);
+            ret = {
+                response: res.data.results[0].geometry.location
+            };
+        }).catch(error => {
+            console.log(error);
+        }).finally(() => {
+            res.json(ret);
+        });
     });
 });

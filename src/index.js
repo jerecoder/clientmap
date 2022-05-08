@@ -37,16 +37,16 @@ async function initMap() {
     geocoder = new google.maps.Geocoder();
     // The location of Uluru
     const pos = {
-        lat: 25,
-        lng: 135
+        lat: 0,
+        lng: 0
     };
     map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 4,
+        zoom: 2,
         center: pos
     });
 }
 
-async function newMarker(pos, q) {
+function newMarker(pos, q) {
     new google.maps.Marker({
         position: pos,
         map,
@@ -177,17 +177,18 @@ function onApiLoad() {
     });
 }
 
-function init() {
+async function init() {
     initMap();
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
+    await delay(1000);
     let id = urlParams.get('id');
     if (id) {
-        console.log(id);
-        //convert queries
+        //conseguir todas las queries
+        let qries = [];
         $.ajax({
             method: "POST",
-            url: funchttp + "convert",
+            url: funchttp + "getQ",
             crossDomain: true,
             dataType: "json",
             async: false,
@@ -195,14 +196,34 @@ function init() {
                 map: id
             },
             success: function(res) {
-                console.log(res);
+                qries = res.response;
             },
             error: function(res) {
                 console.log(res, "error");
             }
         });
-        //load already converted database
-
+        //convertir 1 por 1, evitar timeout y tener respuesta grafica
+        qries.forEach(q => {
+            let result;
+            $.ajax({
+                method: "POST",
+                url: 'https://us-central1-clientmap-b1f1b.cloudfunctions.net/' + "convert",
+                crossDomain: true,
+                dataType: "json",
+                async: false,
+                data: {
+                    map: id,
+                    query: q
+                },
+                success: function(res) {
+                    result = res.response;
+                },
+                error: function(res) {
+                    console.log(res, "error");
+                }
+            });
+            newMarker(result, q);
+        });
     }
 }
 
