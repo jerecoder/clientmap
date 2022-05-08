@@ -1,10 +1,8 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
-const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
-admin.initializeApp();
+const axios = require('axios');
 
-const secretManagerServiceClient = new SecretManagerServiceClient();
-const name = 'projects/608817167872/secrets/workflow/versions/latest';
+admin.initializeApp();
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 
@@ -18,7 +16,7 @@ exports.makeMap = functions.https.onRequest(async(req, res) => {
         admin.firestore().collection('maps').add({
             name: name,
             queries: [],
-            latlng: []
+            coords: []
         }).then((docRef) => {
             console.log("sucess " + docRef.id);
             res.json({ result: docRef.id });
@@ -46,33 +44,44 @@ exports.addPoint = functions.https.onRequest(async(req, res) => {
 
 
 exports.convert = functions.https.onRequest(async(req, res) => {
-    cors(req, res, async() => {
-        const [apikey] = await secretManagerServiceClient.accessSecretVersion({ API_KEY });
-        res.json({ response: apikey });
-        /*//add the point to the database
+    cors(req, res, () => {
+        const key = process.env.API_KEY;
+        console.log(process.env.nombre);
+        /*
+        //fetch adresses
         const map = req.body.map;
-        const queries = admin.firestore().collection('maps').doc(map).queries;
+        const mapdoc = admin.firestore().collection('maps').doc(map);
+        let coords = [];
+        let queries = [];
         //make geocoding queries
-        queries.forEach((q) => {
-            $.ajax({
-                type: "GET",
-                url: "https://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(q) + "&key=AIzaSyDLSEV6LDZulCRY-9jdP760cq80PcXQOuw",
-                async: false,
-                success: function(data) {
-                    response = data.results[0].geometry.location;
-                },
-                error: function() {
-                    res.json({ response: "couldn't fetch geocoding" })
-                    alert('Error occured');
-                }
-            });
-        });
-        admin.firestore().collection('maps').doc(map).update({
-            queries: admin.firestore.FieldValue.arrayUnion(adress)
+        mapdoc.get().then((doc) => {
+            if (doc.exists) {
+                queries = doc.data().queries;
+                console.log(queries);
+            } else {
+                // doc.data() will be undefined in this case
+                res.json({ response: "NO.DOCUMENT" });
+            }
         }).then(() => {
-            res.json({ response: "good job!" });
+            queries.forEach((q) => {
+                axios.get("https://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(q) + "&key=" + key).then(res => {
+                    console.log(res.data);
+                    //console.log(data.results[0].geometry.location);
+                    //coords.push(data.results[0].geometry.location);
+                }).catch(error => {
+                    console.log(error);
+                })
+            });
+            admin.firestore().collection('maps').doc(map).update({
+                coords: coords
+            }).then(() => {
+                res.json({ response: coords });
+            }).catch((error) => {
+                res.json({ response: "couldn't add coords" });
+            });
         }).catch((error) => {
-            console.log("Error adding document: " + error);
+            console.log(error);
+            res.json({ response: "NO.GET.DOCUMENT" });
         });*/
     });
 });

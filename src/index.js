@@ -7,6 +7,10 @@ import { async } from "@firebase/util";
 
 //local functions: http://localhost:5001/clientmap-b1f1b/us-central1/
 
+let funchttp = "https://us-central1-clientmap-b1f1b.cloudfunctions.net/";
+if (location.hostname === "localhost") {
+    funchttp = "http://localhost:5001/clientmap-b1f1b/us-central1/";
+}
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 let firebaseConfig = {
@@ -82,7 +86,7 @@ async function make(file, filename) {
         let mapID = null;
         $.ajax({
             method: "POST",
-            url: "https://us-central1-clientmap-b1f1b.cloudfunctions.net/makeMap",
+            url: funchttp + "makeMap",
             crossDomain: true,
             async: false,
             dataType: "json",
@@ -99,7 +103,7 @@ async function make(file, filename) {
         uniq.forEach((ad) => {
             $.ajax({
                 method: "POST",
-                url: "https://us-central1-clientmap-b1f1b.cloudfunctions.net/addPoint",
+                url: funchttp + "addPoint",
                 crossDomain: true,
                 dataType: "json",
                 async: false,
@@ -177,17 +181,18 @@ function init() {
     initMap();
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    if (urlParams.get('id')) {
-        console.log("defined id");
+    let id = urlParams.get('id');
+    if (id) {
+        console.log(id);
         //convert queries
         $.ajax({
-            method: "GET",
-            url: "https://us-central1-clientmap-b1f1b.cloudfunctions.net/convert",
+            method: "POST",
+            url: funchttp + "convert",
             crossDomain: true,
             dataType: "json",
             async: false,
             data: {
-                map: "urlParams.id"
+                map: id
             },
             success: function(res) {
                 console.log(res);
